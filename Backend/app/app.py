@@ -7,6 +7,7 @@ from werkzeug.datastructures import FileStorage
 import mysql.connector
 import logging
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -14,6 +15,7 @@ load_dotenv()
 
 # Initialize the Flask app
 app = Flask(__name__)
+CORS(app)
 
 # MySQL Database configuration using environment variables
 db_config = {                                               # Your MySQL username

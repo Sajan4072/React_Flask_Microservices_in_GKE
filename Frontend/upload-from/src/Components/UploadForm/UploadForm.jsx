@@ -10,7 +10,7 @@ const UploadForm = () => {
     event.preventDefault();
 
     try {
-      const response = await fetch('http://<FLASK_BACKEND_URL>/upload-url', {
+      const response = await fetch('http://127.0.0.1:5000/upload-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,8 +47,7 @@ const UploadForm = () => {
       {message && <p className="message">{message}</p>}
       {publicUrl && (
         <div className="uploaded-image">
-          <h3>Uploaded Image:</h3>
-          <img src={publicUrl} alt="Uploaded" width="200" />
+          <h3>Uploaded Image URL:</h3>
           <p>Public URL: <a href={publicUrl}>{publicUrl}</a></p>
         </div>
       )}
