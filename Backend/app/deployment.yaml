@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-deployment
+spec:
+  replicas: 3
+  
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: gcr.io/docker-gke-436022/myapp3:latest
+        ports:
+        - containerPort: 8081
+      imagePullSecrets:
+      - name: gcr-json-key
