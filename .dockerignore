@@ -1,0 +1,31 @@
+# Ignore environment files to prevent sensitive data from being included
+Backend/app/.env
+
+# Ignore node_modules in the frontend
+Frontend/upload-from/node_modules/
+**/node_modules/
+
+# Ignore Python cache and bytecode files in the backend
+Backend/app/__pycache__/
+Backend/app/*.pyc
+Backend/app/*.pyo
+Backend/app/*.pyd
+
+# Ignore virtual environments
+Backend/app/env/
+
+
+# Ignore frontend build artifacts 
+
+
+# Ignore logs and temporary files in all directories
+*.log
+*.tmp
+*.swp
+
+# Ignore version control folder
+.git/
+.gitignore
+
+# Ignore deployment configuration files (optional, depends on your use case)
+Backend/app/deployment.yaml

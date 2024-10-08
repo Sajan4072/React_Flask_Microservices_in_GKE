@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  cloudsql-proxy:
+    container_name: cloudsql-proxy
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.5.0
+    command:  ${INSTANCE_ID} --credentials-file=/secrets/cloudsql/credentials.json --address 0.0.0.0 --port 3306
+    networks:
+      - backend-network
+    ports:
+      - 3306:3306
+    volumes:
+      - C:\Users\User\Downloads\dockergke-credential\credentials.json:/secrets/cloudsql/credentials.json
+
+
+  #flask API backend
+  flask-api-app:
+    build: 
+      context: ./Backend/app
+      dockerfile: Dockerfile
+
+    depends_on:
+      - cloudsql-proxy
+    ports:
+      - "5000:8080"  # Exposing 5000 externally but the app runs on 8080 internally
+
+    networks:
+      - backend-network
+
+# Nginx service to proxy requests
+  nginx:
+    build:
+      context: ./Backend/nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - flask-api-app
+    ports:
+      - "81:81"
+    networks:
+      - backend-network
+
+  # React Frontend
+  react-app:
+    build:
+      context: ./Frontend/upload-form
+      dockerfile: Dockerfile_react
+    ports:
+      - "3000:80" # React app on port 3000 served through Nginx (port 80 internally)
+    networks:
+      - frontend-network
+    
+networks:
+  backend-network:
+    driver: bridge
+  frontend-network:
+    driver: bridge
