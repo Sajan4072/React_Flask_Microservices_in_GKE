@@ -21,9 +21,9 @@ CORS(app)
 db_config = {                                               # Your MySQL username
     'user': os.getenv('DB_USER'),
     'password': os.getenv('DB_PASSWORD'),                   # Your MySQL password 
-    'port': os.getenv('DB_PORT'),                           #port whre auth cloud sql proxy is listening 
-    'host': os.getenv('DB_HOST'),                           # Your Cloud SQL instance IP or 'localhost' for local MySQL
-    'database': os.getenv('DB_NAME')                        # Your MySQL database name
+    'port': "3306",                           #port whre auth cloud sql proxy is listening 
+    'host': "127.0.0.1",                           # Your Cloud SQL instance IP or 'localhost' for local MySQL
+    'database': "inclass_database"                       # Your MySQL database name
 }
 
 # Function to get a database connection

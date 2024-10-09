@@ -10,7 +10,7 @@ const UploadForm = () => {
     event.preventDefault();
 
     try {
-      const response = await fetch('http://127.0.0.1:81//upload-url', {
+      const response = await fetch('http://34.67.21.176:81//upload-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
