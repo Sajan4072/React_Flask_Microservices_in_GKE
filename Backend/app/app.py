@@ -8,8 +8,13 @@ import mysql.connector
 import logging
 from dotenv import load_dotenv
 from flask_cors import CORS
+from google.cloud import pubsub_v1
+from concurrent.futures import TimeoutError
+
 
 load_dotenv()
+
+timeout = 5.0   
 
 
 
@@ -106,6 +111,67 @@ def upload_from_url():
         return jsonify({"error": str(e)}), 400
     except mysql.connector.Error as err:
         return jsonify({"error": f"Database error: {err}"}), 500
+
+# Pub/Sub Subscriber Setup
+subscriber = pubsub_v1.SubscriberClient()
+subscription_path = os.getenv('SUBSCRIBER_NAME')
+
+def pubsub_callback(message):
+    """Callback function to process Pub/Sub messages."""
+    print(f"Received message: {message.data.decode('utf-8')}")
+    image_name = message.attributes.get('image_name')
+    image_url = message.attributes.get('image_url')
+
+    try:
+        # Download the image from the URL
+        response = requests.get(image_url)
+        response.raise_for_status()
+        file = BytesIO(response.content)
+
+        # Convert to FileStorage for Flask
+        file_storage = FileStorage(file, filename=image_name, content_type=response.headers['Content-Type'])
+
+        # Upload to Google Cloud Storage
+        public_url = upload_to_gcs(file_storage, BUCKET_NAME, image_name)
+
+        # Insert image details into MySQL database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        insert_image_query = (
+            "INSERT INTO images (image_name, image_url) "
+            "VALUES (%s, %s)"
+        )
+        cursor.execute(insert_image_query, (image_name, public_url))
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        print(f"Image '{image_name}' uploaded successfully.")
+        message.ack()  # Acknowledge the message
+
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to download image: {e}")
+        message.nack()  # Retry message
+    except mysql.connector.Error as err:
+        print(f"Database error: {err}")
+        message.nack()  # Retry message
+
+@app.route('/start-subscriber', methods=['POST'])
+def start_subscriber():
+    """Endpoint to start Pub/Sub subscription."""
+    streaming_pull_future = subscriber.subscribe(subscription_path, callback=pubsub_callback)
+    print(f"Listening for messages on {subscription_path}...")
+
+    # Keep the subscription active in the background
+    try:
+        streaming_pull_future.result()
+    except TimeoutError:
+        streaming_pull_future.cancel()
+        print("Subscription cancelled.")
+    
+    return jsonify({"message": "Subscriber started"}), 200
 
 
 
